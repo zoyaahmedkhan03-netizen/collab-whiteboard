@@ -111,7 +111,7 @@ const Room = () => {
 
 
   useEffect(() => {
-    const baseUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
+    const baseUrl = (import.meta.env.VITE_SERVER_URL || "").trim() || "http://localhost:5000";
     const cleanUrl = baseUrl.replace(/\/$/, "");
 
     // Use default options and let the client negotiate the best transport/protocol.
@@ -145,6 +145,9 @@ const Room = () => {
 
       if (excalidrawRef.current?.updateScene) {
         excalidrawRef.current.updateScene({ elements: roomScene.elements, appState: roomScene.appState });
+        window.setTimeout(() => {
+          remoteUpdate.current = false;
+        }, 0);
       } else {
         setExcalidrawKey((prev) => prev + 1);
       }
