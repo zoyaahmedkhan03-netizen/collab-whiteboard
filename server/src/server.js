@@ -1,8 +1,6 @@
 import http from "http";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
-import { createClient } from "redis";
-import { createAdapter } from "@socket.io/redis-adapter";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import Room from "./models/Room.js";
@@ -10,19 +8,6 @@ import Room from "./models/Room.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
-
-const createSocketAdapter = async (io) => {
-  if (!process.env.REDIS_URL) {
-    return;
-  }
-
-  const pubClient = createClient({ url: process.env.REDIS_URL });
-  const subClient = pubClient.duplicate();
-
-  await Promise.all([pubClient.connect(), subClient.connect()]);
-  io.adapter(createAdapter(pubClient, subClient));
-  console.log("Socket.IO Redis adapter connected");
-};
 
 const getRoomParticipantCount = (ioInstance, roomCode) => {
   const participants = getRoomParticipants(ioInstance, roomCode);
@@ -52,14 +37,15 @@ const startServer = async () => {
 
   const server = http.createServer(app);
 
+  // Optimized specifically for Render Web Service routing layers
   const io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL || "http://localhost:5173",
       credentials: true,
     },
+    transports: ["polling", "websocket"], // Explicitly match frontend priority layout
+    allowEIO3: true
   });
-
-  await createSocketAdapter(io);
 
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
@@ -89,6 +75,7 @@ const startServer = async () => {
 
     socket.on("whiteboard-update", async ({ roomCode, scene }) => {
       try {
+        // Broadcasts immediately to all other sockets in the room instance
         socket.to(roomCode).emit("room-state", scene);
         await Room.findOneAndUpdate(
           { code: roomCode.toUpperCase() },
