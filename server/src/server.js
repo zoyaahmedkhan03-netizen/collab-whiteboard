@@ -84,15 +84,20 @@ const startServer = async () => {
           const normalizedScene = {
             elements: Array.isArray(scene?.elements) ? scene.elements : [],
             appState: {
+              ...(scene?.appState ?? {}),
               viewBackgroundColor:
                 scene?.appState?.viewBackgroundColor || "#ffffff",
             },
+            files:
+              typeof scene?.files === "object" && scene.files !== null
+                ? scene.files
+                : {},
           };
 
           socket.to(code).emit("room-state", normalizedScene);
           await Room.findOneAndUpdate(
             { code },
-            { scene },
+            { scene: normalizedScene },
             { new: true }
           );
         }

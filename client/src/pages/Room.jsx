@@ -13,6 +13,7 @@ const initialScene = {
     viewBackgroundColor: "#ffffff",
     collaborators: [],
   },
+  files: {},
 };
 
 const safeParseJSON = (value, fallback = null) => {
@@ -39,6 +40,8 @@ const normalizeScene = (scene) => {
         ? scene.appState.collaborators
         : [],
     },
+    files:
+      typeof scene.files === "object" && scene.files !== null ? scene.files : {},
   };
 };
 
@@ -154,6 +157,7 @@ const Room = () => {
 
         const updatePayload = {
           elements: mergedElements,
+          files: roomScene.files ?? {},
         };
 
         if (typeof roomScene.appState?.viewBackgroundColor === "string") {
@@ -228,14 +232,14 @@ const Room = () => {
   }, [excalidrawKey]);
 
   const handleWhiteboardChange = useCallback(
-    (elements, appState) => {
+    (elements, appState, files) => {
       // Ignore changes during remote updates to prevent feedback loop
       if (remoteUpdate.current) {
         return;
       }
 
       // Create the structured next scene format
-      const nextScene = { elements, appState };
+      const nextScene = { elements, appState, files };
       const normalizedScene = normalizeScene(nextScene);
 
       // Save it locally in local storage for persistence
