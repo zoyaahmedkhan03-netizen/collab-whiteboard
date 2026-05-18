@@ -1,5 +1,3 @@
-import React from "react";
-
 const PenIcon = ({ className = "w-6 h-6 mr-2 text-slate-700" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

@@ -1,17 +1,21 @@
 import Room from "../models/Room.js";
 
+
 const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
+
 
 export const createRoom = async (req, res) => {
   try {
     const { title } = req.body;
 
+
     let code = generateRoomCode();
     while (await Room.exists({ code })) {
       code = generateRoomCode();
     }
+
 
     const room = await Room.create({
       code,
@@ -19,6 +23,7 @@ export const createRoom = async (req, res) => {
       host: req.user._id,
       participants: [req.user._id],
     });
+
 
     return res.status(201).json({
       success: true,
@@ -36,9 +41,11 @@ export const createRoom = async (req, res) => {
   }
 };
 
+
 export const joinRoom = async (req, res) => {
   try {
     const { roomCode } = req.body;
+
 
     if (!roomCode) {
       return res.status(400).json({
@@ -47,7 +54,9 @@ export const joinRoom = async (req, res) => {
       });
     }
 
+
     const room = await Room.findOne({ code: roomCode.toUpperCase() });
+
 
     if (!room) {
       return res.status(404).json({
@@ -56,10 +65,12 @@ export const joinRoom = async (req, res) => {
       });
     }
 
+
     if (!room.participants.some((participant) => participant.equals(req.user._id))) {
       room.participants.push(req.user._id);
       await room.save();
     }
+
 
     return res.json({
       success: true,
@@ -77,11 +88,14 @@ export const joinRoom = async (req, res) => {
   }
 };
 
+
 export const getRoom = async (req, res) => {
   try {
     const { code } = req.params;
 
+
     const room = await Room.findOne({ code: code.toUpperCase() });
+
 
     if (!room) {
       return res.status(404).json({
@@ -89,6 +103,7 @@ export const getRoom = async (req, res) => {
         message: "Room not found",
       });
     }
+
 
     return res.json({
       success: true,

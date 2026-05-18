@@ -100,6 +100,21 @@ const startServer = async () => {
       }
     });
 
+    socket.on("leave-room", ({ roomCode }) => {
+      try {
+        const code = roomCode?.toUpperCase();
+        if (code) {
+          socket.leave(code);
+          const participantCount = getRoomParticipantCount(io, code);
+          const participantList = getRoomParticipants(io, code);
+          io.to(code).emit("participant-count", participantCount);
+          io.to(code).emit("participant-list", participantList);
+        }
+      } catch (error) {
+        console.error("Socket leave-room error:", error?.message || error);
+      }
+    });
+
     socket.on("clear-board", async ({ roomCode }) => {
       try {
         const emptyScene = {
