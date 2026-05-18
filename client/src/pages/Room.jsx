@@ -104,14 +104,14 @@ const Room = () => {
   }, [code, navigate, localSceneKey]);
 
 
-  useEffect(() => {
+    useEffect(() => {
     const socket = io(import.meta.env.VITE_SERVER_URL || "http://localhost:5000", {
-      // Allow polling fallback for environments where websocket cannot connect.
-      transports: ["websocket", "polling"],
+      // Prioritize polling so Render free tier can stream packets instantly without closing connections
+      transports: ["polling", "websocket"],
     });
 
-
     socketRef.current = socket;
+
 
 
     socket.on("connect", () => {
