@@ -143,8 +143,17 @@ const Room = () => {
       setSceneLoaded(true);
 
       if (excalidrawRef.current?.updateScene) {
+        // Merge incoming elements with existing elements to avoid losing local drawings
+        const currentElements = excalidrawRef.current.getSceneElements?.() || [];
+        
+        // Merge: keep existing elements that aren't in the remote update, add/update remote elements
+        const mergedElements = [
+          ...currentElements.filter(el => !roomScene.elements.find(r => r.id === el.id)),
+          ...roomScene.elements
+        ];
+
         const updatePayload = {
-          elements: roomScene.elements,
+          elements: mergedElements,
         };
 
         if (typeof roomScene.appState?.viewBackgroundColor === "string") {
