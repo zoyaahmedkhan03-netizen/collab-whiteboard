@@ -142,6 +142,9 @@ const Room = () => {
       setSceneLoaded(true);
       if (excalidrawRef.current) {
         excalidrawRef.current.updateScene(roomScene);
+        setTimeout(() => {
+          remoteUpdate.current = false;
+        }, 0);
       } else {
         setPendingScene(roomScene);
       }
@@ -202,6 +205,9 @@ const Room = () => {
     if (pendingScene && excalidrawRef.current) {
       excalidrawRef.current.updateScene(pendingScene);
       setPendingScene(null);
+      setTimeout(() => {
+        remoteUpdate.current = false;
+      }, 0);
     }
   }, [pendingScene]);
 
@@ -217,7 +223,6 @@ const Room = () => {
 
       
       if (remoteUpdate.current) {
-        remoteUpdate.current = false;
         return;
       }
 
