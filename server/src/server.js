@@ -123,17 +123,25 @@ const startServer = async () => {
 
     socket.on("clear-board", async ({ roomCode }) => {
       try {
+        // Complete structural reset layout to satisfy Excalidraw's schema properties fully
         const emptyScene = {
           elements: [],
-          appState: { viewBackgroundColor: "#ffffff" },
+          appState: { 
+            viewBackgroundColor: "#ffffff",
+            collaborators: [] 
+          },
+          files: {}
         };
 
         const code = roomCode?.toUpperCase();
         if (code) {
+          // 1. Broadcast the clear screen event straight to everyone in the room
           io.to(code).emit("room-state", emptyScene);
+          
+          // 2. Wipe the scene array data cleanly out of your MongoDB Database using $set
           await Room.findOneAndUpdate(
             { code },
-            { scene: emptyScene },
+            { $set: { scene: emptyScene } },
             { new: true }
           );
         }
@@ -141,6 +149,7 @@ const startServer = async () => {
         console.error("Socket clear-board error:", error.message);
       }
     });
+
 
     socket.on("disconnect", () => {
       const rooms = Array.from(socket.rooms).filter(
