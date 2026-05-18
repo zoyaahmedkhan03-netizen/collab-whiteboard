@@ -38,13 +38,17 @@ const startServer = async () => {
   const server = http.createServer(app);
 
   // Optimized specifically for Render Web Service routing layers
+  const clientOrigins = process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
+    : ["http://localhost:5173"];
+
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      origin: clientOrigins,
       credentials: true,
     },
     transports: ["polling", "websocket"], // Explicitly match frontend priority layout
-    allowEIO3: true
+    allowEIO3: true,
   });
 
   io.on("connection", (socket) => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { Excalidraw } from "@excalidraw/excalidraw";
+import ErrorBoundary from "../components/ErrorBoundary.jsx";
 import api from "../api.js";
 import "@excalidraw/excalidraw/index.css";
 
@@ -46,13 +47,13 @@ const Room = () => {
   const navigate = useNavigate();
   const [roomTitle, setRoomTitle] = useState("Collaborative Room");
   const [statusMessage, setStatusMessage] = useState("Connecting...");
+  const [isConnected, setIsConnected] = useState(false);
   const [participantCount, setParticipantCount] = useState(1);
   const [participants, setParticipants] = useState([]);
   const [scene, setScene] = useState(initialScene);
   const [initialSceneData, setInitialSceneData] = useState(null);
-  const [sceneKey, setSceneKey] = useState(0);
+  const [excalidrawKey, setExcalidrawKey] = useState(0);
   const [sceneLoaded, setSceneLoaded] = useState(false);
-  const [pendingScene, setPendingScene] = useState(null);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     safeParseJSON(localStorage.getItem("canvaslink-sidebar-collapsed"), false)
@@ -126,6 +127,7 @@ const Room = () => {
 
     socket.on("connect", () => {
       setStatusMessage("Connected");
+      setIsConnected(true);
       socket.emit("join-room", {
         roomCode: code,
         userName: user?.name || "Guest",
@@ -137,16 +139,14 @@ const Room = () => {
       if (!newScene) return;
       const roomScene = normalizeScene(newScene);
       remoteUpdate.current = true;
-      setScene(roomScene);
+      setInitialSceneData(roomScene);
       localStorage.setItem(localSceneKey, JSON.stringify(roomScene));
       setSceneLoaded(true);
-      if (excalidrawRef.current) {
-        excalidrawRef.current.updateScene(roomScene);
-        setTimeout(() => {
-          remoteUpdate.current = false;
-        }, 0);
+
+      if (excalidrawRef.current?.updateScene) {
+        excalidrawRef.current.updateScene({ elements: roomScene.elements, appState: roomScene.appState });
       } else {
-        setPendingScene(roomScene);
+        setExcalidrawKey((prev) => prev + 1);
       }
     });
 
@@ -202,18 +202,16 @@ const Room = () => {
 
 
   useEffect(() => {
-    if (pendingScene && excalidrawRef.current) {
-      excalidrawRef.current.updateScene(pendingScene);
-      setPendingScene(null);
-      setTimeout(() => {
-        remoteUpdate.current = false;
-      }, 0);
-    }
-  }, [pendingScene]);
+    remoteUpdate.current = false;
+  }, [excalidrawKey]);
 
-
-    const handleWhiteboardChange = useCallback(
+  const handleWhiteboardChange = useCallback(
     (elements, appState) => {
+      // Ignore changes during remote updates to prevent feedback loop
+      if (remoteUpdate.current) {
+        return;
+      }
+
       // Create the structured next scene format
       const nextScene = { elements, appState };
       const normalizedScene = normalizeScene(nextScene);
@@ -221,14 +219,8 @@ const Room = () => {
       // Save it locally in local storage for persistence
       localStorage.setItem(localSceneKey, JSON.stringify(normalizedScene));
 
-      
-      if (remoteUpdate.current) {
-        return;
-      }
-
-      
-      setScene(normalizedScene);
-
+      // Emit directly to server for real-time sync
+      // Do NOT call setScene here - this prevents infinite loops
       if (socketRef.current && socketRef.current.connected) {
         socketRef.current.emit("whiteboard-update", {
           roomCode: code,
@@ -248,7 +240,8 @@ const Room = () => {
       appState: { viewBackgroundColor: "#ffffff" },
     });
     setScene(emptyScene);
-    setSceneKey((prev) => prev + 1);
+    setInitialSceneData(emptyScene);
+    setExcalidrawKey((prev) => prev + 1);
     localStorage.setItem(localSceneKey, JSON.stringify(emptyScene));
     socketRef.current?.emit("clear-board", {
       roomCode: code,
@@ -398,25 +391,27 @@ const Room = () => {
                   <rect x="9" y="5" width="12" height="14" rx="1" />
                 </svg>
               </button>
-              {sceneLoaded && initialSceneData ? (
-                <Excalidraw
-                  key={sceneKey}
-                  excalidrawAPI={(api) => {
-                    excalidrawRef.current = api;
-                  }}
-                  initialData={initialSceneData}
-                  onChange={handleWhiteboardChange}
-                  name={roomTitle}
-                  theme="light"
-                  viewModeEnabled={false}
-                  zenModeEnabled={false}
-                />
-              ) : (
+              <ErrorBoundary>
+                {sceneLoaded && isConnected && initialSceneData ? (
+                  <Excalidraw
+                    key={excalidrawKey}
+                    excalidrawAPI={(api) => {
+                      excalidrawRef.current = api;
+                    }}
+                    initialData={initialSceneData}
+                    onChange={handleWhiteboardChange}
+                    name={roomTitle}
+                    theme="light"
+                    viewModeEnabled={false}
+                    zenModeEnabled={false}
+                  />
+                ) : (
 
-                <div className="flex h-full items-center justify-center text-slate-500">
-                  Loading whiteboard...
-                </div>
-              )}
+                  <div className="flex h-full items-center justify-center text-slate-500">
+                    {isConnected ? "Loading whiteboard..." : "Connecting..."}
+                  </div>
+                )}
+              </ErrorBoundary>
             </div>
           </main>
         </div>

@@ -5,8 +5,14 @@ import roomRoutes from "./routes/room.routes.js";
 
 const app = express();
 
-const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-const allowedOrigins = [clientUrl, "http://localhost:5174"];
+const envClientOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
+  : [];
+const allowedOrigins = [
+  ...envClientOrigins,
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
 
 app.use(
   cors({
