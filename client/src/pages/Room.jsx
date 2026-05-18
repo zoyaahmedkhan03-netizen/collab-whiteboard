@@ -104,7 +104,7 @@ const Room = () => {
   }, [code, navigate, localSceneKey]);
 
 
-    useEffect(() => {
+  useEffect(() => {
     const socket = io(import.meta.env.VITE_SERVER_URL || "http://localhost:5000", {
       // Prioritize polling so Render free tier can stream packets instantly without closing connections
       transports: ["polling", "websocket"],
@@ -193,23 +193,31 @@ const Room = () => {
 
   const handleWhiteboardChange = useCallback(
     (elements, appState) => {
+      // Create the clean next scene format
       const nextScene = { elements, appState };
       const normalizedScene = normalizeScene(nextScene);
+
+
       setScene(normalizedScene);
       localStorage.setItem(localSceneKey, JSON.stringify(normalizedScene));
+
 
       if (remoteUpdate.current) {
         remoteUpdate.current = false;
         return;
       }
 
-      socketRef.current?.emit("whiteboard-update", {
-        roomCode: code,
-        scene: normalizedScene,
-      });
+
+      if (socketRef.current) {
+        socketRef.current.emit("whiteboard-update", {
+          roomCode: code,
+          scene: normalizedScene,
+        });
+      }
     },
     [code, localSceneKey]
   );
+
 
 
   const clearBoard = () => {
