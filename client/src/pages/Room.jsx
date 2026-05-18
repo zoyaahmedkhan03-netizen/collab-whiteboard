@@ -105,12 +105,17 @@ const Room = () => {
 
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SERVER_URL || "http://localhost:5000", {
-      // Prioritize polling so Render free tier can stream packets instantly without closing connections
+    const baseUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
+    const cleanUrl = baseUrl.replace(/\/$/, "");
+
+    const socket = io(cleanUrl, {
       transports: ["polling", "websocket"],
+      secure: true,
+      rejectUnauthorized: false,
     });
 
     socketRef.current = socket;
+
 
 
 
@@ -379,7 +384,9 @@ const Room = () => {
               {sceneLoaded ? (
                 <Excalidraw
                   key={sceneKey}
-                  ref={excalidrawRef}
+                  excalidrawAPI={(api) => {
+                    excalidrawRef.current = api;
+                  }}
                   initialData={scene}
                   onChange={handleWhiteboardChange}
                   name={roomTitle}
@@ -388,6 +395,7 @@ const Room = () => {
                   zenModeEnabled={false}
                 />
               ) : (
+
                 <div className="flex h-full items-center justify-center text-slate-500">
                   Loading whiteboard...
                 </div>
