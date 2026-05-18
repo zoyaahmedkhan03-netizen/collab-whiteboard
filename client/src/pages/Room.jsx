@@ -108,10 +108,10 @@ const Room = () => {
     const baseUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
     const cleanUrl = baseUrl.replace(/\/$/, "");
 
+    // Use default options and let the client negotiate the best transport/protocol.
+    // Avoid forcing insecure TLS options which can cause runtime errors in browsers.
     const socket = io(cleanUrl, {
       transports: ["polling", "websocket"],
-      secure: true,
-      rejectUnauthorized: false,
     });
 
     socketRef.current = socket;
@@ -155,8 +155,13 @@ const Room = () => {
     });
 
 
-    socket.on("connect_error", () => {
+    socket.on("connect_error", (err) => {
+      console.error("socket connect_error:", err);
       setStatusMessage("Unable to connect to the server.");
+    });
+
+    socket.on("error", (err) => {
+      console.error("socket error:", err);
     });
 
 
@@ -211,7 +216,7 @@ const Room = () => {
         return;
       }
 
-      // If YOU drew this, sync it to the global state and broadcast it instantly
+      
       setScene(normalizedScene);
 
       if (socketRef.current && socketRef.current.connected) {

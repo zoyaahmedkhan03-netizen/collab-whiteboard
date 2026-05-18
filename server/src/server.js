@@ -75,13 +75,16 @@ const startServer = async () => {
 
     socket.on("whiteboard-update", async ({ roomCode, scene }) => {
       try {
-        // Broadcasts immediately to all other sockets in the room instance
-        socket.to(roomCode).emit("room-state", scene);
-        await Room.findOneAndUpdate(
-          { code: roomCode.toUpperCase() },
-          { scene },
-          { new: true }
-        );
+        // Normalize room code and broadcast to the joined room
+        const code = roomCode?.toUpperCase();
+        if (code) {
+          socket.to(code).emit("room-state", scene);
+          await Room.findOneAndUpdate(
+            { code },
+            { scene },
+            { new: true }
+          );
+        }
       } catch (error) {
         console.error("Socket whiteboard-update error:", error.message);
       }
@@ -109,12 +112,15 @@ const startServer = async () => {
           appState: { viewBackgroundColor: "#ffffff" },
         };
 
-        io.to(roomCode).emit("room-state", emptyScene);
-        await Room.findOneAndUpdate(
-          { code: roomCode.toUpperCase() },
-          { scene: emptyScene },
-          { new: true }
-        );
+        const code = roomCode?.toUpperCase();
+        if (code) {
+          io.to(code).emit("room-state", emptyScene);
+          await Room.findOneAndUpdate(
+            { code },
+            { scene: emptyScene },
+            { new: true }
+          );
+        }
       } catch (error) {
         console.error("Socket clear-board error:", error.message);
       }
