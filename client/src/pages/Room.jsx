@@ -139,16 +139,26 @@ const Room = () => {
       if (!newScene) return;
       const roomScene = normalizeScene(newScene);
       remoteUpdate.current = true;
-      setInitialSceneData(roomScene);
       localStorage.setItem(localSceneKey, JSON.stringify(roomScene));
       setSceneLoaded(true);
 
       if (excalidrawRef.current?.updateScene) {
-        excalidrawRef.current.updateScene({ elements: roomScene.elements, appState: roomScene.appState });
+        const updatePayload = {
+          elements: roomScene.elements,
+        };
+
+        if (typeof roomScene.appState?.viewBackgroundColor === "string") {
+          updatePayload.appState = {
+            viewBackgroundColor: roomScene.appState.viewBackgroundColor,
+          };
+        }
+
+        excalidrawRef.current.updateScene(updatePayload);
         window.setTimeout(() => {
           remoteUpdate.current = false;
         }, 0);
       } else {
+        setInitialSceneData(roomScene);
         setExcalidrawKey((prev) => prev + 1);
       }
     });
@@ -261,6 +271,13 @@ const Room = () => {
       setStatusMessage("Could not copy the invite link.");
     }
   };
+
+  const openExcalidrawMenu = useCallback(() => {
+    const menuBtn = document.querySelector('.main-menu-trigger');
+    if (menuBtn) {
+      menuBtn.click();
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -377,7 +394,7 @@ const Room = () => {
                   return next;
                 })}
                 title={sidebarCollapsed ? "Show side controls" : "Hide side controls"}
-                className="absolute left-20 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 <span className="sr-only">{sidebarCollapsed ? "Show side controls" : "Hide side controls"}</span>
                 <svg
@@ -392,6 +409,19 @@ const Room = () => {
                 >
                   <rect x="3" y="5" width="4" height="14" rx="1" />
                   <rect x="9" y="5" width="12" height="14" rx="1" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={openExcalidrawMenu}
+                title="Open whiteboard menu"
+                className="absolute left-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              >
+                <span className="sr-only">Open whiteboard menu</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
                 </svg>
               </button>
               <ErrorBoundary>

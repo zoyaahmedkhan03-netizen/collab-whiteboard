@@ -79,10 +79,17 @@ const startServer = async () => {
 
     socket.on("whiteboard-update", async ({ roomCode, scene }) => {
       try {
-        // Normalize room code and broadcast to the joined room
         const code = roomCode?.toUpperCase();
         if (code) {
-          socket.to(code).emit("room-state", scene);
+          const normalizedScene = {
+            elements: Array.isArray(scene?.elements) ? scene.elements : [],
+            appState: {
+              viewBackgroundColor:
+                scene?.appState?.viewBackgroundColor || "#ffffff",
+            },
+          };
+
+          socket.to(code).emit("room-state", normalizedScene);
           await Room.findOneAndUpdate(
             { code },
             { scene },

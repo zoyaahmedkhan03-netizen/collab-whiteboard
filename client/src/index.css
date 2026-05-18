@@ -78,3 +78,85 @@ body {
 [role="listbox"] {
   z-index: 9999 !important;
 }
+
+/* Keep the Excalidraw bottom bar island from becoming the button offset parent */
+.excalidraw .App-bottom-bar > .Island {
+  position: static !important;
+}
+
+/* Force the mobile bottom menu to appear as a compact bottom-left panel */
+.excalidraw .App-bottom-bar {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 1rem !important;
+  left: 1rem !important;
+  right: auto !important;
+  width: auto !important;
+  max-width: 360px !important;
+  max-height: 280px !important;
+  height: auto !important;
+  z-index: 10000 !important;
+  overflow: visible !important;
+}
+
+.excalidraw .App-bottom-bar .Island {
+  position: relative !important;
+  width: 100% !important;
+  max-height: 260px !important;
+}
+
+.excalidraw .App-mobile-menu {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 360px !important;
+  min-width: 280px !important;
+  max-height: 260px !important;
+  overflow: auto !important;
+}
+
+.excalidraw .App-mobile-menu .panelColumn {
+  width: 100% !important;
+  max-width: 360px !important;
+  min-width: 280px !important;
+  max-height: 260px !important;
+  box-sizing: border-box !important;
+  overflow: auto !important;
+}
+
+.excalidraw .color-picker-container {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 320px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* Hide the original Excalidraw menu button and use a board-anchored overlay button instead */
+.excalidraw .main-menu-trigger {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.excalidraw .main-menu-trigger svg,
+.excalidraw .dropdown-menu-button--mobile.main-menu-trigger svg {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+/* Keep the mobile more tools button in the toolbar, not top-left */
+.excalidraw .App-toolbar__extra-tools-trigger,
+.excalidraw .dropdown-menu-button--mobile:not(.main-menu-trigger) {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  right: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+}
+
+.excalidraw .App-toolbar__extra-tools-trigger svg,
+.excalidraw .dropdown-menu-button--mobile:not(.main-menu-trigger) svg {
+  width: 1rem !important;
+  height: 1rem !important;
+}
