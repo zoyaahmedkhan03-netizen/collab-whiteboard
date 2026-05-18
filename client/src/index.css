@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* When this class is applied on the Excalidraw container, hide property popovers */
+.hide-excalidraw-sidepanel .properties-content,
+.hide-excalidraw-sidepanel .color-picker-container,
+.hide-excalidraw-sidepanel .excalidraw-eye-dropper-container,
+.hide-excalidraw-sidepanel .excalidraw-eye-dropper-preview,
+.hide-excalidraw-sidepanel .ToolIcon_type_button,
+.hide-excalidraw-sidepanel .properties-trigger,
+.hide-excalidraw-sidepanel .sidebar,
+.hide-excalidraw-sidepanel .sidebar__header,
+.hide-excalidraw-sidepanel .sidebar-tabs-root,
+.hide-excalidraw-sidepanel .sidebar-trigger,
+.hide-excalidraw-sidepanel .default-sidebar,
+.hide-excalidraw-sidepanel .App-toolbar,
+.hide-excalidraw-sidepanel .App-toolbar-container,
+.hide-excalidraw-sidepanel .App-bottom-bar,
+.hide-excalidraw-sidepanel .App-menu,
+.hide-excalidraw-sidepanel .App-menu__item,
+.hide-excalidraw-sidepanel .App-menu__group,
+.hide-excalidraw-sidepanel .App-menu__body,
+.hide-excalidraw-sidepanel .layer-ui__wrapper,
+.hide-excalidraw-sidepanel .layer-ui__wrapper__footer-left,
+.hide-excalidraw-sidepanel .layer-ui__wrapper__footer-right,
+.hide-excalidraw-sidepanel .layer-ui__wrapper__footer-center,
+.hide-excalidraw-sidepanel .App-toolbar__extra-tools-trigger,
+.hide-excalidraw-sidepanel .App-toolbar__extra-tools-dropdown,
+.hide-excalidraw-sidepanel .mobile-misc-tools-container,
+.hide-excalidraw-sidepanel .main-menu-trigger,
+.hide-excalidraw-sidepanel .default-sidebar-trigger,
+.hide-excalidraw-sidepanel .toolbar,
+.hide-excalidraw-sidepanel .menu,
+.hide-excalidraw-sidepanel .Menu,
+.hide-excalidraw-sidepanel .properties-content,
+.hide-excalidraw-sidepanel .color-picker-container,
+.hide-excalidraw-sidepanel .excalidraw-eye-dropper-container,
+.hide-excalidraw-sidepanel .excalidraw-eye-dropper-preview,
+.hide-excalidraw-sidepanel .ToolIcon_type_button,
+.hide-excalidraw-sidepanel .properties-trigger {
+  display: none !important;
+}
+
+.hide-excalidraw-sidepanel .excalidraw,
+.hide-excalidraw-sidepanel .excalidraw__canvas {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.hide-excalidraw-sidepanel .excalidraw__canvas {
+  left: 0 !important;
+}
+
+/* Widen the canvas to full width when the side panel is collapsed */
+.hide-excalidraw-sidepanel .excalidraw {
+  width: 100% !important;
+}
+
+/* Ensure Excalidraw menus and popovers always appear on top */
+.excalidraw__menu,
+.excalidraw__menu__item,
+.excalidraw-menu-item,
+.excalidraw-menu-item__content,
+.excalidraw-menu__body,
+.excalidraw__dropdown,
+.excalidraw-dropdown,
+[role="menu"],
+[role="listbox"] {
+  z-index: 9999 !important;
+}
