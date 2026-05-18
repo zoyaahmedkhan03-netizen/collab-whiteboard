@@ -49,6 +49,7 @@ const Room = () => {
   const [participantCount, setParticipantCount] = useState(1);
   const [participants, setParticipants] = useState([]);
   const [scene, setScene] = useState(initialScene);
+  const [initialSceneData, setInitialSceneData] = useState(null);
   const [sceneKey, setSceneKey] = useState(0);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [pendingScene, setPendingScene] = useState(null);
@@ -84,6 +85,7 @@ const Room = () => {
         const rawScene = response.data.room.scene || savedScene || initialScene;
         const roomScene = normalizeScene(rawScene);
         setScene(roomScene);
+        setInitialSceneData(roomScene);
         localStorage.setItem(localSceneKey, JSON.stringify(roomScene));
         setParticipantCount(response.data.room.participantCount || 1);
         setSceneLoaded(true);
@@ -92,7 +94,10 @@ const Room = () => {
         if (savedScene) {
           const roomScene = normalizeScene(savedScene);
           setScene(roomScene);
+          setInitialSceneData(roomScene);
           localStorage.setItem(localSceneKey, JSON.stringify(roomScene));
+        } else {
+          setInitialSceneData(initialScene);
         }
         setStatusMessage(err.response?.data?.message || "Room not found");
         setSceneLoaded(true);
@@ -388,13 +393,13 @@ const Room = () => {
                   <rect x="9" y="5" width="12" height="14" rx="1" />
                 </svg>
               </button>
-              {sceneLoaded ? (
+              {sceneLoaded && initialSceneData ? (
                 <Excalidraw
                   key={sceneKey}
                   excalidrawAPI={(api) => {
                     excalidrawRef.current = api;
                   }}
-                  initialData={scene}
+                  initialData={initialSceneData}
                   onChange={handleWhiteboardChange}
                   name={roomTitle}
                   theme="light"
