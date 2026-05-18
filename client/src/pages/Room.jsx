@@ -263,16 +263,26 @@ const Room = () => {
   const clearBoard = () => {
     const emptyScene = normalizeScene({
       elements: [],
-      appState: { viewBackgroundColor: "#ffffff" },
+      appState: { viewBackgroundColor: "#ffffff", collaborators: [] },
     });
-    setScene(emptyScene);
-    setInitialSceneData(emptyScene);
-    setExcalidrawKey((prev) => prev + 1);
+
+    // Clear browser memory storage cache 
     localStorage.setItem(localSceneKey, JSON.stringify(emptyScene));
+
+    // Force an immediate layout canvas flush via Excalidraw API
+    if (excalidrawRef.current) {
+      remoteUpdate.current = true; // Blocks reflection loop bounces
+      excalidrawRef.current.updateScene({
+        elements: [],
+      });
+    }
+
+    // Trigger global socket wipe
     socketRef.current?.emit("clear-board", {
       roomCode: code,
     });
   };
+
 
 
   const handleCopyInvite = async () => {
