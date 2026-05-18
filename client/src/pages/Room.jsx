@@ -196,24 +196,25 @@ const Room = () => {
   }, [pendingScene]);
 
 
-  const handleWhiteboardChange = useCallback(
+    const handleWhiteboardChange = useCallback(
     (elements, appState) => {
-      // Create the clean next scene format
+      // Create the structured next scene format
       const nextScene = { elements, appState };
       const normalizedScene = normalizeScene(nextScene);
 
-
-      setScene(normalizedScene);
+      // Save it locally in local storage for persistence
       localStorage.setItem(localSceneKey, JSON.stringify(normalizedScene));
 
-
+      
       if (remoteUpdate.current) {
         remoteUpdate.current = false;
         return;
       }
 
+      // If YOU drew this, sync it to the global state and broadcast it instantly
+      setScene(normalizedScene);
 
-      if (socketRef.current) {
+      if (socketRef.current && socketRef.current.connected) {
         socketRef.current.emit("whiteboard-update", {
           roomCode: code,
           scene: normalizedScene,
@@ -222,6 +223,7 @@ const Room = () => {
     },
     [code, localSceneKey]
   );
+
 
 
 
